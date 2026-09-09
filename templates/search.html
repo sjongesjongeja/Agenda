@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Zoeken: {{ query }}{% endblock %}
+
+{% block content %}
+<div class="search-header">
+    <h1 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem;">
+        Zoekresultaten voor &ldquo;{{ query }}&rdquo;
+    </h1>
+    <p style="color: var(--text-muted);">
+        {% if events %}
+            Er zijn {{ events|length }} afspraak/afspraken gevonden.
+        {% else %}
+            Geen afspraken gevonden die voldoen aan je zoekterm.
+        {% endif %}
+    </p>
+</div>
+
+{% if events %}
+    <div class="search-results-list">
+        {% for ev in events %}
+            <a href="{{ url_for('view_event', event_id=ev.id) }}" class="search-card" style="border-left-color: {{ ev.color or '#2DD4A8' }};">
+                <div class="search-card-left">
+                    <div style="font-size: 0.8rem; font-weight: 600; color: var(--primary-text); margin-bottom: 0.2rem;">
+                        {{ ev|event_date_display }}
+                        {% if ev.start_time %}
+                            &bull; {{ ev.start_time }}{% if ev.end_time %} &ndash; {{ ev.end_time }}{% endif %}
+                        {% else %}
+                            &bull; Hele dag
+                        {% endif %}
+                    </div>
+                    <div class="search-card-title">{{ ev.title }}</div>
+                    
+                    {% if ev.description %}
+                        <div class="search-card-desc">{{ ev.description|truncate(120) }}</div>
+                    {% endif %}
+                    
+                    {% if ev.location %}
+                        <div style="font-size: 0.825rem; color: var(--text-muted); margin-top: 0.4rem; display: flex; align-items: center; gap: 0.35rem;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <span>{{ ev.location }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <span class="btn btn-outline btn-sm">Bekijken &rarr;</span>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card" style="text-align: center; padding: 3rem 1.5rem;">
+        <div style="font-size: 3rem; margin-bottom: 0.75rem;">🔍</div>
+        <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Niets gevonden</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Probeer een andere zoekterm zoals een naam, plaats of onderwerp.</p>
+        <div>
+            <a href="{{ url_for('index') }}" class="btn btn-outline">Terug naar de agenda</a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

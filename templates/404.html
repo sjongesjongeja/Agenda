@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Pagina niet gevonden (404){% endblock %}
+
+{% block content %}
+<div class="card error-page">
+    <div class="error-code">404</div>
+    <h1 class="error-title">Pagina niet gevonden</h1>
+    <p class="error-desc">
+        De opgevraagde pagina of afspraak bestaat niet meer of is verplaatst.
+    </p>
+    <div>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            &larr; Terug naar de agenda
+        </a>
+    </div>
+</div>
+{% endblock %}

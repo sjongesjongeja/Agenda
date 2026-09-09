@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="card detail-card">
+    <div class="detail-badge-strip" style="background-color: {{ event.color or '#2DD4A8' }};"></div>
+
+    <div class="detail-header">
+        <div class="detail-meta-row">
+            <span class="detail-date-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                {{ event|event_date_full_range }}
+            </span>
+        </div>
+        <h1 class="detail-title">{{ event.title }}</h1>
+    </div>
+
+    <div class="detail-body">
+        <!-- Tijd -->
+        <div class="detail-item">
+            <div class="detail-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </div>
+            <div class="detail-item-content">
+                <div class="detail-item-label">Tijdstip</div>
+                <div class="detail-item-text" style="font-weight: 600;">
+                    {% if event.start_time %}
+                        {{ event.start_time }}{% if event.end_time %} &ndash; {{ event.end_time }}{% endif %}
+                    {% else %}
+                        Hele dag
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Locatie (indien aanwezig) -->
+        {% if event.location %}
+            <div class="detail-item">
+                <div class="detail-icon-wrap">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                </div>
+                <div class="detail-item-content">
+                    <div class="detail-item-label">Locatie</div>
+                    <div class="detail-item-text">{{ event.location }}</div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Beschrijving (indien aanwezig) -->
+        {% if event.description %}
+            <div class="detail-item">
+                <div class="detail-icon-wrap">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="17" y1="10" x2="3" y2="10"></line>
+                        <line x1="21" y1="6" x2="3" y2="6"></line>
+                        <line x1="21" y1="14" x2="3" y2="14"></line>
+                        <line x1="17" y1="18" x2="3" y2="18"></line>
+                    </svg>
+                </div>
+                <div class="detail-item-content">
+                    <div class="detail-item-label">Beschrijving</div>
+                    <div class="detail-item-text">{{ event.description }}</div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="detail-actions">
+        <a href="{{ url_for('index') }}" class="btn btn-outline" id="btn-back">
+            &larr; Terug naar agenda
+        </a>
+
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <form action="{{ url_for('delete_event', event_id=event.id) }}" method="POST" class="delete-event-form" data-event-title="{{ event.title }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-ghost" style="color: var(--danger);" id="btn-delete">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Verwijderen
+                </button>
+            </form>
+
+            <a href="{{ url_for('edit_event', event_id=event.id) }}" class="btn btn-primary" id="btn-edit">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Bewerken
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

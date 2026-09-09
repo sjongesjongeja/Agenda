@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}{{ month_name }} {{ year }}{% endblock %}
+
+{% block content %}
+<!-- Kalender Navigatie Toolbar -->
+<div class="calendar-toolbar">
+    <div class="calendar-nav-group">
+        <h1 class="calendar-title">{{ month_name }} {{ year }}</h1>
+        <div style="display: flex; gap: 0.4rem; align-items: center;">
+            <a href="{{ url_for('index', year=prev_year, month=prev_month) }}" class="nav-arrow-btn" aria-label="Vorige maand" title="Vorige maand">
+                ‹
+            </a>
+            <a href="{{ url_for('index', year=today.year, month=today.month, day=today.day) }}" class="btn btn-outline btn-sm" id="btn-today">
+                Vandaag
+            </a>
+            <a href="{{ url_for('index', year=next_year, month=next_month) }}" class="nav-arrow-btn" aria-label="Volgende maand" title="Volgende maand">
+                ›
+            </a>
+        </div>
+    </div>
+
+    <div class="toolbar-actions">
+        <a href="{{ url_for('add_event', date=selected_date_str) }}" class="btn btn-primary" id="btn-add-for-day">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            + Afspraak
+        </a>
+    </div>
+</div>
+
+<!-- Kalender & Dagoverzicht Grid -->
+<div class="calendar-layout">
+    
+    <!-- Kalender Kaart -->
+    <div class="calendar-card">
+        <!-- Kolomkoppen (Maandag t/m Zondag) -->
+        <div class="calendar-days-header">
+            {% for day_name in dutch_days_short %}
+                <div class="day-name-col">{{ day_name }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Dagenraster -->
+        <div class="calendar-grid">
+            {% for week in calendar_weeks %}
+                {% for day in week %}
+                    <div class="calendar-cell {% if not day.is_current_month %}other-month{% endif %} {% if day.is_today %}is-today{% endif %} {% if day.is_selected %}is-selected{% endif %}"
+                         onclick="if(!event.target.closest('.event-pill') && !event.target.closest('.add-on-hover')) { window.location.href='{{ url_for('index', year=year, month=month, day=day.date.day) }}'; }">
+                        
+                        <div class="cell-top">
+                            <div class="day-number">
+                                {{ day.day_number }}
+                            </div>
+                            
+                            {% if day.is_today %}
+                                <span class="today-tag">Vandaag</span>
+                            {% endif %}
+
+                            <a href="{{ url_for('add_event', date=day.date_str) }}" class="add-on-hover" title="Afspraak toevoegen op {{ day.date|dutch_date_short }}">
+                                +
+                            </a>
+                        </div>
+
+                        <!-- Afspraken in deze cel -->
+                        <div class="cell-events">
+                            {% for ev in day.events %}
+                                <a href="{{ url_for('view_event', event_id=ev.id) }}"
+                                   class="event-pill {% if ev.is_multiday %}event-pill-multiday{% endif %}"
+                                   data-event-id="{{ ev.id }}"
+                                   style="background-color: {{ ev.color }}1f; border-left-color: {{ ev.color }};"
+                                   title="{% if ev.is_multiday %}{{ ev|event_date_display }}{% if ev.start_time %}, {{ ev.start_time }}{% endif %}{% else %}{{ ev.start_time or 'Hele dag' }}{% endif %}: {{ ev.title }}">
+                                    {% if ev.start_time %}
+                                        <span class="pill-time">{{ ev.start_time }}</span>
+                                    {% elif ev.is_multiday %}
+                                        <span class="pill-time" style="font-size: 0.68rem; font-weight: 700; opacity: 0.8;">&bull;&bull;&bull;</span>
+                                    {% endif %}
+                                    <span class="pill-title">{{ ev.title }}</span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Dag Agenda Zijpaneel -->
+    <aside class="day-sidebar">
+        <div class="day-sidebar-header">
+            <div class="day-sidebar-subtitle">
+                {% if selected_date == today %}
+                    Vandaag
+                {% else %}
+                    Geselecteerde dag
+                {% endif %}
+            </div>
+            <h2 class="day-sidebar-title">{{ selected_date|dutch_date }}</h2>
+        </div>
+
+        <div class="day-events-list">
+            {% if selected_day_events %}
+                {% for ev in selected_day_events %}
+                    <a href="{{ url_for('view_event', event_id=ev.id) }}" 
+                       class="agenda-card" 
+                       data-event-id="{{ ev.id }}"
+                       style="border-left-color: {{ ev.color }};">
+                        <div class="agenda-card-time">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            {% if ev.is_multiday %}
+                                <span>{{ ev|event_date_display }}{% if ev.start_time %} &bull; {{ ev.start_time }}{% if ev.end_time %} &ndash; {{ ev.end_time }}{% endif %}{% endif %}</span>
+                            {% elif ev.start_time %}
+                                <span>{{ ev.start_time }}{% if ev.end_time %} &ndash; {{ ev.end_time }}{% endif %}</span>
+                            {% else %}
+                                <span>Hele dag</span>
+                            {% endif %}
+                        </div>
+                        <div class="agenda-card-title">{{ ev.title }}</div>
+                        
+                        {% if ev.location or ev.description %}
+                            <div class="agenda-card-meta">
+                                {% if ev.location %}
+                                    <div class="agenda-meta-item">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                            <circle cx="12" cy="10" r="3"></circle>
+                                        </svg>
+                                        <span>{{ ev.location }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </a>
+                {% endfor %}
+            {% else %}
+                <div class="empty-day-state">
+                    <div class="empty-day-icon">☕</div>
+                    <p style="font-weight: 600; color: var(--text-main); margin-bottom: 0.25rem;">Geen afspraken</p>
+                    <p style="font-size: 0.85rem;">Geniet van je vrije tijd of plan een nieuwe activiteit.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <a href="{{ url_for('add_event', date=selected_date_str) }}" class="btn btn-outline" style="width: 100%; justify-content: center;" id="btn-sidebar-add">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Afspraak plannen voor deze dag
+        </a>
+    </aside>
+
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Afspraak bewerken: {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="card form-card">
+    <div class="card-header">
+        <h1 class="card-title">Afspraak bewerken</h1>
+        <p class="card-subtitle">Pas de gegevens van de afspraak (of meerdaagse periode) aan.</p>
+    </div>
+
+    <div class="card-body">
+        <form action="{{ url_for('edit_event', event_id=event.id) }}" method="POST" id="edit-event-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-grid">
+                <!-- Titel -->
+                <div class="form-group form-group-full">
+                    <label for="title" class="form-label">Titel <span class="required">*</span></label>
+                    <input type="text" id="title" name="title" class="form-control" required autofocus value="{{ event.title }}">
+                </div>
+
+                <!-- Startdatum -->
+                <div class="form-group">
+                    <label for="event_date" class="form-label">Startdatum <span class="required">*</span></label>
+                    <input type="date" id="event_date" name="event_date" class="form-control" required value="{{ event.event_date }}">
+                </div>
+
+                <!-- Einddatum (voor meerdaagse afspraken) -->
+                <div class="form-group">
+                    <label for="end_date" class="form-label">Einddatum <span style="font-weight: normal; color: var(--text-muted); font-size: 0.8rem;">(voor meerdaags)</span></label>
+                    <input type="date" id="end_date" name="end_date" class="form-control" value="{{ event.end_date or '' }}">
+                </div>
+
+                <!-- Begintijd -->
+                <div class="form-group">
+                    <label for="start_time" class="form-label">Begintijd <span style="font-weight: normal; color: var(--text-muted); font-size: 0.8rem;">(optioneel)</span></label>
+                    <input type="time" id="start_time" name="start_time" class="form-control" value="{{ event.start_time or '' }}">
+                </div>
+
+                <!-- Eindtijd -->
+                <div class="form-group">
+                    <label for="end_time" class="form-label">Eindtijd <span style="font-weight: normal; color: var(--text-muted); font-size: 0.8rem;">(optioneel)</span></label>
+                    <input type="time" id="end_time" name="end_time" class="form-control" value="{{ event.end_time or '' }}">
+                </div>
+
+                <!-- Locatie -->
+                <div class="form-group form-group-full">
+                    <label for="location" class="form-label">Locatie <span style="font-weight: normal; color: var(--text-muted); font-size: 0.8rem;">(optioneel)</span></label>
+                    <input type="text" id="location" name="location" class="form-control" placeholder="bijv. Frankrijk of Uddel" value="{{ event.location or '' }}">
+                </div>
+
+                <!-- Beschrijving -->
+                <div class="form-group form-group-full">
+                    <label for="description" class="form-label">Beschrijving <span style="font-weight: normal; color: var(--text-muted); font-size: 0.8rem;">(optioneel)</span></label>
+                    <textarea id="description" name="description" class="form-control" placeholder="Aantekeningen...">{{ event.description or '' }}</textarea>
+                </div>
+
+                <!-- Kleur -->
+                <div class="form-group form-group-full">
+                    <label class="form-label">Kleuraccent</label>
+                    <div class="color-picker-group">
+                        {% set current_color = event.color or '#2DD4A8' %}
+                        {% for c in preset_colors %}
+                            <label class="color-option" title="{{ c.label }}">
+                                <input type="radio" name="color" value="{{ c.value }}" {% if current_color == c.value %}checked{% endif %}>
+                                <span class="color-swatch" style="background-color: {{ c.value }};"></span>
+                            </label>
+                        {% endfor %}
+                        <input type="color" name="custom_color" class="color-custom-input" value="{{ current_color }}" title="Aangepaste kleur kiezen"
+                               onchange="const r = document.querySelector('input[name=color]:checked'); if(r) r.checked=false; const dummy = document.createElement('input'); dummy.type='hidden'; dummy.name='color'; dummy.value=this.value; this.parentElement.appendChild(dummy);">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('view_event', event_id=event.id) }}" class="btn btn-outline" id="btn-cancel-edit">Annuleren</a>
+                <button type="submit" class="btn btn-primary" id="btn-submit-edit">Wijzigingen opslaan</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
